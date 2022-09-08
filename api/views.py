@@ -51,17 +51,30 @@ def _edit_zone_file(container_id, ttl, exp_id):
         return False
 
 
+@asyncio.coroutine
 async def _sign(container_id, validity):
     try:
         # execute the following command in each docker container in a parallel fashion
-        signing_cmd = "dnssec-signzone -N INCREMENT -o " + domain + " -e now+" + (validity * 60) + \
+        signing_cmd = "dnssec-signzone -N INCREMENT -o " + domain + " -e now+" + str(int(validity) * 60) + \
                       " -k /etc/bind/zones/Kcashcash.app.+008+13816.key -t /etc/bind/zones/db.cashcash.app " \
                       "/etc/bind/zones/Kcashcash.app.+008+45873.private"
         cmd = "docker exec -i " + containers[container_id-1] + " " + signing_cmd
+        p = _execute_bash(cmd)
+        stdout = p.stdout.decode().split('\n') + p.stderr.decode().split('\n')
+        signed = False
+        for j in stdout:
+            if 'Zone fully signed:' in j:
+                signed = True
+        print(stdout)
+        if not signed:
+            raise Exception("Signing resulted in failure: " + "\n".join(stdout))
+
+        restart_cmd = "docker start " + containers[container_id-1]
         _execute_bash(cmd)
         return True
     except Exception as e:
-        print(e)
+        import traceback
+        traceback.print_exc()
         return False
 
 
@@ -84,7 +97,6 @@ class Edit(APIView):
         exp_id = kwargs['exp_id']
 
         # add the wildcard entry to the zone file, edit the ttl. do it for every container in an async way
-
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError as e:
@@ -108,12 +120,21 @@ class Sign(APIView):
         kwargs = request.GET.dict()
         validity = kwargs['validity']
 
-        async def worker():
-            tasks = [_sign(each, validity) for each in range(1, 9)]
-            await asyncio.wait(tasks)
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError as e:
+            if str(e).startswith('There is no current event loop in thread'):
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            else:
+                raise
 
-        loop = asyncio.get_event_loop()
-        coroutine = worker()
-        loop.run_until_complete(coroutine)
+        tasks = [_sign(each, validity) for each in range(1, 3)]  # TODO: change it to 9
+        result = loop.run_until_complete(asyncio.gather(*tasks))
+        loop.close()
 
-        return Response({'success': True}, status=status.HTTP_200_OK)
+        if all(result):
+            return Response({'success': True}, status=status.HTTP_200_OK)
+        else:
+            return Response({'success': False, 'error': str("Failure")}, status=status.HTTP_400_BAD_REQUEST)
+
