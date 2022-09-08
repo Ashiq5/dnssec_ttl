@@ -36,11 +36,13 @@ def _edit_zone_file(container_id, ttl, exp_id):
         base_path = '/home/ubuntu/shared/'
         path = base_path + 'v' + str(container_id)
         zone_file_name = "db." + domain
+        path = os.path.join(path, zone_file_name)
         with open(path, 'a') as f:
             f.write('*.' + exp_id + '.' + domain + '.' + '	IN	A	' + container2ip_dict[container_id])
 
         cmd = "docker exec -i " + containers[container_id-1] + " sh -c 'cat > /etc/bind/zones/" + zone_file_name + "' < " + \
-              base_path + zone_file_name
+              path
+        print(path, cmd)
         _execute_bash(cmd)
         return True
     except Exception as e:
@@ -82,7 +84,14 @@ class Edit(APIView):
 
         # add the wildcard entry to the zone file, edit the ttl. do it for every container in an async way
 
-        loop = asyncio.get_event_loop()
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError as e:
+            if str(e).startswith('There is no current event loop in thread'):
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            else:
+                raise
         tasks = [_edit_zone_file(each, ttl, exp_id) for each in range(1, 3)]  # TODO: change it to 9
         result = loop.run_until_complete(asyncio.gather(*tasks))
         loop.close()
