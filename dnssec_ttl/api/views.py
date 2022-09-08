@@ -10,10 +10,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 domain = "cashcash.app"
+containers = ["6f7e04631710", "668a22e2de4e", "306c42b372c2"]
 container2ip_dict = {
     "1": "10.0.0.1",
     "2": "10.0.0.2",
-    "3": "",
+    "3": "10.0.0.3",
     "4": "",
     "5": "",
     "6": "",
@@ -22,19 +23,43 @@ container2ip_dict = {
 }
 
 
-async def _edit_zone_file(container_id, ttl, exp_id):
+def _execute_bash(cmd):
+    print('Command:', cmd)
+    return subprocess.run(cmd, shell=True, capture_output=True)
+
+
+@asyncio.coroutine
+def _edit_zone_file(container_id, ttl, exp_id):
     # 1. add "*.<exp_id>.<domain>. IN A container2ip_dict[container_id]
     # 2. modify TTL value (I guess it can be done manually)
-    # 3.
-    pass
+    try:
+        base_path = '/home/ubuntu/shared/'
+        path = base_path + 'v' + str(container_id)
+        zone_file_name = "db." + domain
+        with open(path, 'a') as f:
+            f.write('*.' + exp_id + '.' + domain + '.' + '	IN	A	' + container2ip_dict[container_id])
+
+        cmd = "docker exec -i " + containers[container_id-1] + " sh -c 'cat > /etc/bind/zones/" + zone_file_name + "' < " + \
+              base_path + zone_file_name
+        _execute_bash(cmd)
+        return True
+    except Exception as e:
+        print(e)
+        return False
 
 
 async def _sign(container_id, validity):
-    # execute the following command in each docker container in a parallel fashion
-    # dnssec-signzone -N INCREMENT -o cashcash.app -e now+(validity*60)
-    # -k /etc/bind/zones/Kcashcash.app.+008+13816.key -t /etc/bind/zones/db.cashcash.app
-    # /etc/bind/zones/Kcashcash.app.+008+45873.private
-    pass
+    try:
+        # execute the following command in each docker container in a parallel fashion
+        signing_cmd = "dnssec-signzone -N INCREMENT -o " + domain + " -e now+" + (validity * 60) + \
+                      " -k /etc/bind/zones/Kcashcash.app.+008+13816.key -t /etc/bind/zones/db.cashcash.app " \
+                      "/etc/bind/zones/Kcashcash.app.+008+45873.private"
+        cmd = "docker exec -i " + containers[container_id-1] + " " + signing_cmd
+        _execute_bash(cmd)
+        return True
+    except Exception as e:
+        print(e)
+        return False
 
 
 # Create your views here.
@@ -57,7 +82,15 @@ class Edit(APIView):
 
         # add the wildcard entry to the zone file, edit the ttl. do it for every container in an async way
 
-        return Response({'success': True}, status=status.HTTP_200_OK)
+        loop = asyncio.get_event_loop()
+        tasks = [_edit_zone_file(each, ttl, exp_id) for each in range(1, 9)]
+        result = loop.run_until_complete(asyncio.gather(*tasks))
+        loop.close()
+
+        if all(result):
+            return Response({'success': True}, status=status.HTTP_200_OK)
+        else:
+            return Response({'success': False, 'error': str("Failure")}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Sign(APIView):
