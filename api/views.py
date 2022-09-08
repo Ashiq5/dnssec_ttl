@@ -38,7 +38,7 @@ def _edit_zone_file(container_id, ttl, exp_id):
         zone_file_name = "db." + domain
         path = os.path.join(path, zone_file_name)
         with open(path, 'a') as f:
-            f.write('*.' + exp_id + '	IN	A	' + container2ip_dict[container_id] + '\n')
+            f.write('*.' + exp_id + '	IN	A	' + container2ip_dict[str(container_id)] + '\n')
 
         cmd = "docker exec -i " + containers[container_id-1] + " sh -c 'cat > /etc/bind/zones/" + zone_file_name \
               + "' < " + path
