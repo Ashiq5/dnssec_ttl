@@ -10,11 +10,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 domain = "cashcash.app"
-containers = ["6f7e04631710", "668a22e2de4e", "306c42b372c2"]
+containers = ["668a22e2de4e", "6f7e04631710"]
 container2ip_dict = {
     "1": "10.0.0.1",
     "2": "10.0.0.2",
-    "3": "10.0.0.3",
+    "3": "",
     "4": "",
     "5": "",
     "6": "",
@@ -83,7 +83,7 @@ class Edit(APIView):
         # add the wildcard entry to the zone file, edit the ttl. do it for every container in an async way
 
         loop = asyncio.get_event_loop()
-        tasks = [_edit_zone_file(each, ttl, exp_id) for each in range(1, 9)]
+        tasks = [_edit_zone_file(each, ttl, exp_id) for each in range(1, 3)]  # TODO: change it to 9
         result = loop.run_until_complete(asyncio.gather(*tasks))
         loop.close()
 
