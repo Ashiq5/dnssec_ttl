@@ -47,6 +47,17 @@ def _reload_bind(container_id):
     return True
 
 
+def _call_init_api():
+    url = "http://" + zone_ip + ':8080/api/init'
+    header = {
+        "Content-Type": "application/json",
+    }
+    res = requests.get(url, headers=header)
+    if res.status_code != 200:
+        raise Exception("init api resulted in error: ")
+    return Response({'success': True}, status=status.HTTP_200_OK)
+
+
 def _call_sign_api(validity):
     url = "http://" + zone_ip + ':8080/api/sign/?validity=' + str(validity)
     header = {
@@ -191,6 +202,7 @@ class Edit(APIView):
                 return Response({'success': False, 'error': str("Failure")}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             traceback.print_exc()
+            _call_init_api()
             return Response({'success': False, 'error': str("Failure")}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -222,5 +234,6 @@ class Sign(APIView):
                 return Response({'success': False, 'error': str("Failure")}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             traceback.print_exc()
+            _call_init_api()
             return Response({'success': False, 'error': str("Failure")}, status=status.HTTP_400_BAD_REQUEST)
 
