@@ -48,7 +48,7 @@ def _reload_bind(container_id):
 
 
 def _call_sign_api(validity):
-    url = "http://" + zone_ip  + ':8080/sign/?validity=' + str(validity)
+    url = "http://" + zone_ip + ':8080/api/sign/?validity=' + str(validity)
     header = {
         "Content-Type": "application/json",
     }
@@ -147,7 +147,7 @@ class Init(APIView):
                     raise
             tasks = [_init_zone_file(each) for each in range(1, 3)]  # TODO: change it to 9
             result = loop.run_until_complete(asyncio.gather(*tasks))
-            loop.close()
+            # loop.close()
 
             _call_sign_api(30)
             for each in range(1, 3):
@@ -180,7 +180,7 @@ class Edit(APIView):
                     raise
             tasks = [_edit_zone_file(each, ttl, exp_id) for each in range(1, 3)]  # TODO: change it to 9
             result = loop.run_until_complete(asyncio.gather(*tasks))
-            loop.close()
+            # loop.close()
 
             for each in range(1, 3):
                 _reload_bind(each)
@@ -211,7 +211,7 @@ class Sign(APIView):
 
             tasks = [_sign(each, validity) for each in range(1, 3)]  # TODO: change it to 9
             result = loop.run_until_complete(asyncio.gather(*tasks))
-            loop.close()
+            # loop.close()
 
             for each in range(1, 3):
                 _reload_bind(each)
