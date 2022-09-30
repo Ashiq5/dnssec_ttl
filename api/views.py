@@ -165,7 +165,7 @@ class Init(APIView):
             print(time.time() - t1, " zo")
             # loop.close()
 
-            # _call_sign_api(30)
+            _call_sign_api(30)
             # Since sign is calling restart anyways
             # for each in range(1, n):
             #     _reload_bind(each)
@@ -231,8 +231,8 @@ class Sign(APIView):
             result = loop.run_until_complete(asyncio.gather(*tasks))
             # loop.close()
 
-            for each in range(1, n):
-                _reload_bind(each)
+            # for each in range(1, n):
+            #     _reload_bind(each)
 
             if all(result):
                 return Response({'success': True}, status=status.HTTP_200_OK)
