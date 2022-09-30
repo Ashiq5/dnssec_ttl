@@ -36,7 +36,7 @@ def _execute_bash(cmd):
 
 
 def _reload_bind(container_id):
-    cmd = "docker exec -i " + containers[container_id - 1] + " service named restart"
+    cmd = "docker exec -i " + containers[container_id - 1] + " service named reload"
     p = _execute_bash(cmd)
     stdout = p.stdout.decode().split('\n') + p.stderr.decode().split('\n')
     started, reloaded = False, False
