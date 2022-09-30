@@ -88,7 +88,6 @@ def _call_sign_api(validity):
 
 @asyncio.coroutine
 def _init_zone_file(container_id):
-    # print(container_id, "suru", time.time())
     # 1. add "*.<exp_id>.<domain>. IN A container2ip_dict[container_id]
     # 2. modify TTL value (I guess it can be done manually)
     try:
@@ -102,7 +101,6 @@ def _init_zone_file(container_id):
               + "' < " + path
         print(path, cmd)
         _execute_bash(cmd)
-        # print(container_id, "sesh", time.time())
         return True
     except Exception as e:
         traceback.print_exc()
@@ -172,11 +170,8 @@ class Init(APIView):
                     asyncio.set_event_loop(loop)
                 else:
                     raise
-            # t1 = time.time()
             tasks = [_init_zone_file(each) for each in range(1, n)]  # TODO: change it to 9
-            # print(time.time() - t1, " yo")
             result = loop.run_until_complete(asyncio.gather(*tasks))
-            # print(time.time() - t1, " zo")
             # loop.close()
 
             _call_sign_api(30)
@@ -254,7 +249,8 @@ class Sign(APIView):
                 return Response({'success': False, 'error': str("Failure")}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             traceback.print_exc()
-            _call_init_api()
+            # removing this to prevent looping scenario...where signing after init results into failure which would then call init again
+            # _call_init_api()
             return Response({'success': False, 'error': str("Failure")}, status=status.HTTP_400_BAD_REQUEST)
 
 
