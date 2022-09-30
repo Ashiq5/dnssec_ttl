@@ -2,6 +2,7 @@ import time
 
 from django.shortcuts import render
 import os
+import redis
 import pathlib
 import subprocess
 import logging
@@ -14,6 +15,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from dnssec_ttl.settings import ALLOWED_HOSTS
 
+
+redis_pass = "20092010"
+r = redis.Redis(host='localhost', port=6379, db=0, password=redis_pass, decode_responses=True)
 domain = "cashcash.app"
 containers = ["668a22e2de4e", "6f7e04631710", "306c42b372c2", "abcda5d14762"]
 n = len(containers) + 1
@@ -36,12 +40,12 @@ def _execute_bash(cmd):
 
 
 def _reload_bind(container_id):
-    cmd = "docker exec -i " + containers[container_id - 1] + " service named reload"
+    cmd = "docker exec -i " + containers[container_id - 1] + " service named restart"
     p = _execute_bash(cmd)
     stdout = p.stdout.decode().split('\n') + p.stderr.decode().split('\n')
     started, reloaded = False, False
     for j in stdout:
-        if 'Reloading domain name service... named' in j:
+        if 'Starting domain name service... named' in j:
             started = True
         if started and '...done' in j:
             reloaded = True
@@ -282,3 +286,31 @@ class Edit_Sign(APIView):
             traceback.print_exc()
             _call_init_api()
             return Response({'success': False, 'error': str("Failure")}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BindUpdateViewV2(APIView):
+    def get(self, request):
+        try:
+
+            file_version = request.GET.get('file_version', None)
+            exp_id = request.GET.get('exp_id', None)
+            redis_key = "mode-" + str(exp_id)
+            if exp_id is None:
+                raise Exception
+
+            if file_version not in ['first', 'second', 'remove']:
+                raise Exception
+
+            file_version_to_int = {
+                "first": 1,
+                "second": 3,
+                "remove": 2
+            }
+
+            r.set(redis_key, file_version_to_int[file_version])
+            r.expire(redis_key, 2 * 60)
+            return Response({'success': True}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({'success': False, 'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
