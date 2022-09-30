@@ -236,7 +236,7 @@ class Sign(APIView):
             return Response({'success': False, 'error': str("Failure")}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class EditandSign(APIView):
+class Edit_Sign(APIView):
     def get(self, request):
         try:
             kwargs = request.GET.dict()
