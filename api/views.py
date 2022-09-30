@@ -159,6 +159,7 @@ class Init(APIView):
             # loop.close()
 
             _call_sign_api(30)
+            # Since sign is calling restart anyways
             # for each in range(1, n):
             #     _reload_bind(each)
 
