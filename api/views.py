@@ -31,6 +31,16 @@ container2ip_dict = {
     "7": "",
     "8": ""
 }
+container2local_ip_dict = {
+    "1": "172.17.0.2",
+    "2": "172.17.0.3",
+    "3": "172.17.0.4",
+    "4": "172.17.0.5",
+    "5": "",
+    "6": "",
+    "7": "",
+    "8": ""
+}
 zone_ip = ALLOWED_HOSTS[0]
 
 
@@ -40,12 +50,12 @@ def _execute_bash(cmd):
 
 
 def _reload_bind(container_id):
-    cmd = "docker exec -i " + containers[container_id - 1] + " service named restart"
+    cmd = "docker exec -i " + containers[container_id - 1] + " service named reload"
     p = _execute_bash(cmd)
     stdout = p.stdout.decode().split('\n') + p.stderr.decode().split('\n')
     started, reloaded = False, False
     for j in stdout:
-        if 'Starting domain name service... named' in j:
+        if 'Reloading domain name service... named' in j:
             started = True
         if started and '...done' in j:
             reloaded = True
