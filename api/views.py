@@ -1,3 +1,5 @@
+import time
+
 from django.shortcuts import render
 import os
 import pathlib
@@ -154,8 +156,11 @@ class Init(APIView):
                     asyncio.set_event_loop(loop)
                 else:
                     raise
+            t1 = time.time()
             tasks = [_init_zone_file(each) for each in range(1, n)]  # TODO: change it to 9
+            print(time.time() - t1, " yo")
             result = loop.run_until_complete(asyncio.gather(*tasks))
+            print(time.time() - t1, " zo")
             # loop.close()
 
             _call_sign_api(30)
