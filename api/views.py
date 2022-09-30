@@ -74,6 +74,7 @@ def _call_sign_api(validity):
 
 @asyncio.coroutine
 def _init_zone_file(container_id):
+    print(container_id, "suru", stime.time())
     # 1. add "*.<exp_id>.<domain>. IN A container2ip_dict[container_id]
     # 2. modify TTL value (I guess it can be done manually)
     try:
@@ -87,6 +88,7 @@ def _init_zone_file(container_id):
               + "' < " + path
         print(path, cmd)
         _execute_bash(cmd)
+        print(container_id, "sesh", time.time())
         return True
     except Exception as e:
         traceback.print_exc()
@@ -163,7 +165,7 @@ class Init(APIView):
             print(time.time() - t1, " zo")
             # loop.close()
 
-            _call_sign_api(30)
+            # _call_sign_api(30)
             # Since sign is calling restart anyways
             # for each in range(1, n):
             #     _reload_bind(each)
