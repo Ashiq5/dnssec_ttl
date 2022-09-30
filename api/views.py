@@ -159,8 +159,8 @@ class Init(APIView):
             # loop.close()
 
             _call_sign_api(30)
-            for each in range(1, n):
-                _reload_bind(each)
+            # for each in range(1, n):
+            #     _reload_bind(each)
 
             if all(result):
                 return Response({'success': True}, status=status.HTTP_200_OK)
