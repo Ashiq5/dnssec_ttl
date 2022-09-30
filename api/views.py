@@ -74,7 +74,7 @@ def _call_sign_api(validity):
 
 @asyncio.coroutine
 def _init_zone_file(container_id):
-    print(container_id, "suru", stime.time())
+    print(container_id, "suru", time.time())
     # 1. add "*.<exp_id>.<domain>. IN A container2ip_dict[container_id]
     # 2. modify TTL value (I guess it can be done manually)
     try:
