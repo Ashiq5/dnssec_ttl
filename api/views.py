@@ -13,12 +13,13 @@ from rest_framework.views import APIView
 from dnssec_ttl.settings import ALLOWED_HOSTS
 
 domain = "cashcash.app"
-containers = ["668a22e2de4e", "6f7e04631710"]
+containers = ["668a22e2de4e", "6f7e04631710", "306c42b372c2", "abcda5d14762"]
+n = len(containers) + 1
 container2ip_dict = {
-    "1": "10.0.0.1",
-    "2": "10.0.0.2",
-    "3": "",
-    "4": "",
+    "1": "44.195.175.12",
+    "2": "50.16.6.90",
+    "3": "52.4.120.223",
+    "4": "3.220.52.113",
     "5": "",
     "6": "",
     "7": "",
@@ -130,7 +131,7 @@ async def _sign(container_id, validity):
         if not signed:
             raise Exception("Signing resulted in failure: " + "\n".join(stdout))
 
-        for each in range(1, 3):
+        for each in range(1, n):
             _reload_bind(each)
 
         return True
@@ -156,12 +157,12 @@ class Init(APIView):
                     asyncio.set_event_loop(loop)
                 else:
                     raise
-            tasks = [_init_zone_file(each) for each in range(1, 3)]  # TODO: change it to 9
+            tasks = [_init_zone_file(each) for each in range(1, n)]  # TODO: change it to 9
             result = loop.run_until_complete(asyncio.gather(*tasks))
             # loop.close()
 
             _call_sign_api(30)
-            for each in range(1, 3):
+            for each in range(1, n):
                 _reload_bind(each)
 
             if all(result):
@@ -189,11 +190,11 @@ class Edit(APIView):
                     asyncio.set_event_loop(loop)
                 else:
                     raise
-            tasks = [_edit_zone_file(each, ttl, exp_id) for each in range(1, 3)]  # TODO: change it to 9
+            tasks = [_edit_zone_file(each, ttl, exp_id) for each in range(1, n)]  # TODO: change it to 9
             result = loop.run_until_complete(asyncio.gather(*tasks))
             # loop.close()
 
-            for each in range(1, 3):
+            for each in range(1, n):
                 _reload_bind(each)
 
             if all(result):
@@ -221,11 +222,11 @@ class Sign(APIView):
                 else:
                     raise
 
-            tasks = [_sign(each, validity) for each in range(1, 3)]  # TODO: change it to 9
+            tasks = [_sign(each, validity) for each in range(1, n)]  # TODO: change it to 9
             result = loop.run_until_complete(asyncio.gather(*tasks))
             # loop.close()
 
-            for each in range(1, 3):
+            for each in range(1, n):
                 _reload_bind(each)
 
             if all(result):
@@ -255,11 +256,11 @@ class EditandSign(APIView):
                     asyncio.set_event_loop(loop)
                 else:
                     raise
-            tasks = [_edit_zone_file(each, ttl, exp_id) for each in range(1, 3)]  # TODO: change it to 9
+            tasks = [_edit_zone_file(each, ttl, exp_id) for each in range(1, n)]  # TODO: change it to 9
             result = loop.run_until_complete(asyncio.gather(*tasks))
 
             if all(result):
-                tasks = [_sign(each, validity) for each in range(1, 3)]  # TODO: change it to 9
+                tasks = [_sign(each, validity) for each in range(1, n)]  # TODO: change it to 9
                 result = loop.run_until_complete(asyncio.gather(*tasks))
                 # loop.close()
                 if all(result):
