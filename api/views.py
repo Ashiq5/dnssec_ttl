@@ -131,9 +131,6 @@ async def _sign(container_id, validity):
         if not signed:
             raise Exception("Signing resulted in failure: " + "\n".join(stdout))
 
-        for each in range(1, n):
-            _reload_bind(each)
-
         return True
     except Exception as e:
         traceback.print_exc()
@@ -264,6 +261,8 @@ class EditandSign(APIView):
                 result = loop.run_until_complete(asyncio.gather(*tasks))
                 # loop.close()
                 if all(result):
+                    for each in range(1, n):
+                        _reload_bind(each)
                     return Response({'success': True}, status=status.HTTP_200_OK)
                 else:
                     _call_init_api()
