@@ -116,6 +116,7 @@ def _init_zone_file(container_id):
 def _replace_in_file(file_path, search_text, new_line):
     found = False
     # with FileLock(file_path):
+    print("ashiq", open(file_path).readlines())
     with fileinput.input(file_path, inplace=True) as file:
         for line in file:
             if search_text in line:
