@@ -120,9 +120,9 @@ def _replace_in_file(file_path, search_text, new_line):
         for line in file:
             if search_text in line:
                 found = True
-                print(new_line, end='')
+                print(new_line, end='\n')
             else:
-                print(line + '\n', end='')
+                print(line, end='')
     if not found:
         with open(file_path, 'a') as file:
             file.write(new_line + '\n')
