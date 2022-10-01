@@ -19,27 +19,32 @@ from dnssec_ttl.settings import ALLOWED_HOSTS
 redis_pass = "20092010"
 r = redis.Redis(host='localhost', port=6379, db=0, password=redis_pass, decode_responses=True)
 domain = "cashcash.app"
-containers = ["668a22e2de4e", "6f7e04631710", "306c42b372c2", "abcda5d14762"]
+containers = ["668a22e2de4e", "6f7e04631710", "306c42b372c2", "abcda5d14762", "9cebd7c983d9", "1147a7f801fc",
+              "b9f78b9084b4", "0494d7089c3a", "e4e70b62ffed", "5e69afc16b5d"]
 n = len(containers) + 1
 container2ip_dict = {
-    "1": "44.195.175.12",
-    "2": "50.16.6.90",
-    "3": "52.4.120.223",
-    "4": "3.220.52.113",
-    "5": "",
-    "6": "",
-    "7": "",
-    "8": ""
+    "1": "3.220.52.113",
+    "2": "52.4.120.223",
+    "3": "50.16.6.90",
+    "4": "44.195.175.12",
+    "5": "3.208.196.0",
+    "6": "18.207.47.246",
+    "7": "52.71.44.50",
+    "8": "52.44.221.99",
+    "9": "34.226.99.56",
+    "10": "3.223.194.233"
 }
 container2local_ip_dict = {
     "1": "172.17.0.2",
     "2": "172.17.0.3",
     "3": "172.17.0.4",
     "4": "172.17.0.5",
-    "5": "",
-    "6": "",
-    "7": "",
-    "8": ""
+    "5": "172.17.0.6",
+    "6": "172.17.0.7",
+    "7": "172.17.0.8",
+    "8": "172.17.0.9",
+    "9": "172.17.0.10",
+    "10": "172.17.0.11"
 }
 zone_ip = ALLOWED_HOSTS[0]
 
@@ -117,6 +122,7 @@ def _edit_zone_file(container_id, ttl, exp_id):
         zone_file_name = "db." + domain
         path = os.path.join(path, zone_file_name)
         with open(path, 'a') as f:
+            print('*.' + exp_id + '	IN	A	' + container2ip_dict[str(container_id)])
             f.write('*.' + exp_id + '	IN	A	' + container2ip_dict[str(container_id)] + '\n')
 
         cmd = "docker exec -i " + containers[container_id-1] + " sh -c 'cat > /etc/bind/zones/" + zone_file_name \
