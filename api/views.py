@@ -2,6 +2,7 @@ import time
 
 from django.shortcuts import render
 import os
+from filelock import FileLock
 import redis
 import pathlib
 import subprocess
@@ -112,6 +113,21 @@ def _init_zone_file(container_id):
         return False
 
 
+def _replace_in_file(file_path, search_text, new_line):
+    found = False
+    with FileLock(file_path):
+        with fileinput.input(file_path, inplace=True) as file:
+            for line in file:
+                if search_text in line:
+                    found = True
+                    print(new_line, end='')
+                else:
+                    print(line, end='')
+        if not found:
+            with open(file_path, 'a') as file:
+                file.write(new_line + '\n')
+
+
 @asyncio.coroutine
 def _edit_zone_file(container_id, ttl, exp_id):
     # 1. add "*.<exp_id>.<domain>. IN A container2ip_dict[container_id]
@@ -122,8 +138,10 @@ def _edit_zone_file(container_id, ttl, exp_id):
         zone_file_name = "db." + domain
         path = os.path.join(path, zone_file_name)
         with open(path, 'a') as f:
-            print('*.' + exp_id + '	IN	A	' + container2ip_dict[str(container_id)])
-            f.write('*.' + exp_id + '	IN	A	' + container2ip_dict[str(container_id)] + '\n')
+            new_line = '*.' + exp_id + '	IN	A	' + container2ip_dict[str(container_id)]
+            print(new_line)
+            _replace_in_file(path, exp_id, new_line)
+            # f.write('*.' + exp_id + '	IN	A	' + container2ip_dict[str(container_id)] + '\n')
 
         cmd = "docker exec -i " + containers[container_id-1] + " sh -c 'cat > /etc/bind/zones/" + zone_file_name \
               + "' < " + path
