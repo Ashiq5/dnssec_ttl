@@ -98,7 +98,7 @@ def _init_zone_file(container_id):
     # 2. modify TTL value (I guess it can be done manually)
     try:
         base_path = '/home/ubuntu/shared/'
-        path = base_path + 'v' + str(container_id)
+        path = base_path + 'v' + str(container_id) + '/zones'
         zone_file_name = "db." + domain
         path = os.path.join(path, zone_file_name)
         cmd = "cp " + base_path + zone_file_name + " " + path
