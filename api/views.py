@@ -118,7 +118,7 @@ def _edit_zone_file(container_id, ttl, exp_id):
     # 2. modify TTL value (I guess it can be done manually)
     try:
         base_path = '/home/ubuntu/shared/'
-        path = base_path + 'v' + str(container_id)
+        path = base_path + 'v' + str(container_id - 1)
         zone_file_name = "db." + domain
         path = os.path.join(path, zone_file_name)
         with open(path, 'a') as f:
