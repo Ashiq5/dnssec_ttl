@@ -138,7 +138,7 @@ def _edit_zone_file(container_id, ttl, exp_id):
         path = base_path + 'v' + str(container_id - 1)
         zone_file_name = "db." + domain
         path = os.path.join(path, zone_file_name)
-        print("b4", open(path).readlines())
+        print("b4", path, open(path).readlines())
         # with open(path, 'a') as f:
         new_line = '*.' + exp_id + '	IN	A	' + container2ip_dict[str(container_id)]
         print(new_line)
