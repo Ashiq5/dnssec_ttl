@@ -115,17 +115,17 @@ def _init_zone_file(container_id):
 
 def _replace_in_file(file_path, search_text, new_line):
     found = False
-    with FileLock(file_path):
-        with fileinput.input(file_path, inplace=True) as file:
-            for line in file:
-                if search_text in line:
-                    found = True
-                    print(new_line, end='')
-                else:
-                    print(line, end='')
-        if not found:
-            with open(file_path, 'a') as file:
-                file.write(new_line + '\n')
+    # with FileLock(file_path):
+    with fileinput.input(file_path, inplace=True) as file:
+        for line in file:
+            if search_text in line:
+                found = True
+                print(new_line, end='')
+            else:
+                print(line, end='')
+    if not found:
+        with open(file_path, 'a') as file:
+            file.write(new_line + '\n')
 
 
 @asyncio.coroutine
