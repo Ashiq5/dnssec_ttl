@@ -115,18 +115,17 @@ def _init_zone_file(container_id):
 
 def _replace_in_file(file_path, search_text, new_line):
     found = False
-    # with FileLock(file_path):
-    print("ashiq", open(file_path).readlines())
-    with fileinput.input(file_path, inplace=True) as file:
-        for line in file:
-            if search_text in line:
-                found = True
-                print(new_line, end='')
-            else:
-                print(line, end='')
-    if not found:
-        with open(file_path, 'a') as file:
-            file.write(new_line + '\n')
+    with FileLock(file_path):
+        with fileinput.input(file_path, inplace=True) as file:
+            for line in file:
+                if search_text in line:
+                    found = True
+                    print(new_line, end='')
+                else:
+                    print(line + '\n', end='')
+        if not found:
+            with open(file_path, 'a') as file:
+                file.write(new_line + '\n')
 
 
 @asyncio.coroutine
@@ -138,10 +137,8 @@ def _edit_zone_file(container_id, ttl, exp_id):
         path = base_path + 'v' + str(container_id - 1) + '/zones'
         zone_file_name = "db." + domain
         path = os.path.join(path, zone_file_name)
-        print("b4", path, open(path).readlines())
         # with open(path, 'a') as f:
         new_line = '*.' + exp_id + '	IN	A	' + container2ip_dict[str(container_id)]
-        print(new_line)
         _replace_in_file(path, container2ip_dict[str(container_id)], new_line)
         # f.write('*.' + exp_id + '	IN	A	' + container2ip_dict[str(container_id)] + '\n')
 
