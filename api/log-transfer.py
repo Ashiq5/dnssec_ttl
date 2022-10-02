@@ -32,6 +32,7 @@ def concat_str(lst):
 
 
 def execute_cmd(command):
+    print("command, ", command)
     process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
     output, error = process.communicate()
     return output, error
@@ -82,5 +83,5 @@ scheduler = BlockingScheduler()
 containers = ["668a22e2de4e", "6f7e04631710", "306c42b372c2", "abcda5d14762", "9cebd7c983d9",
               "1147a7f801fc", "b9f78b9084b4", "0494d7089c3a", "e4e70b62ffed", "5e69afc16b5d"]
 for ind, container in enumerate(containers):
-    scheduler.add_job(bind_transfer, args=[str(ind + 1)], trigger='interval', minutes=30)
+    scheduler.add_job(bind_transfer, args=[str(ind + 1)], trigger='interval', minutes=1)
 scheduler.start()
