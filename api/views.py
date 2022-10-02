@@ -20,8 +20,8 @@ from dnssec_ttl.settings import ALLOWED_HOSTS
 redis_pass = "20092010"
 r = redis.Redis(host='localhost', port=6379, db=0, password=redis_pass, decode_responses=True)
 domain = "cashcash.app"
-containers = ["668a22e2de4e", "6f7e04631710", "306c42b372c2", "abcda5d14762", "9cebd7c983d9", "1147a7f801fc",
-              "b9f78b9084b4", "0494d7089c3a", "e4e70b62ffed", "5e69afc16b5d"]
+containers = ["668a22e2de4e", "6f7e04631710", "306c42b372c2", "abcda5d14762", "9cebd7c983d9",
+              "1147a7f801fc", "b9f78b9084b4", "0494d7089c3a", "e4e70b62ffed", "5e69afc16b5d"]
 n = len(containers) + 1
 container2ip_dict = {
     "1": "3.220.52.113",
