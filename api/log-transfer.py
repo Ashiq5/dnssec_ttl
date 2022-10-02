@@ -43,20 +43,29 @@ def bind_transfer_v1(ind, container_id):
 
 
 def bind_transfer(ind, container_id):
-    print(ind, container_id)
-    # send_msg("Starting bind transfer")
+    print("Starting bind transfer")
 
-    files_before_log_rotate = [join(bind_dir, f) for f in listdir(bind_dir) if isfile(join(bind_dir, f))]
-
-    # send_msg("Files before:" + concat_str(files_before_log_rotate))
+    out, err = execute_cmd("docker exec -i " + container_id + " ls " + bind_dir)
+    if not err:
+        files_before_log_rotate = out.decode().split('\n')[:-1]
+        print("before", files_before_log_rotate)
+    else:
+        files_before_log_rotate = []
+    # files_before_log_rotate = [join(bind_dir, f) for f in listdir(bind_dir) if isfile(join(bind_dir, f))]
+    print("Files before:" + concat_str(files_before_log_rotate))
 
     if LIVE:
         s = "docker exec -i " + container_id + " "
         execute_cmd(s + bash_cmd)
 
-    files_after_log_rotate = [join(bind_dir, f) for f in listdir(bind_dir) if isfile(join(bind_dir, f))]
-
-    # send_msg("Files after logrotate:" + concat_str(files_after_log_rotate))
+    out, err = execute_cmd("docker exec -i " + container_id + " ls " + bind_dir)
+    if not err:
+        files_after_log_rotate = out.decode().split('\n')[:-1]
+        print("After", files_after_log_rotate)
+    else:
+        files_after_log_rotate = []
+    # files_after_log_rotate = [join(bind_dir, f) for f in listdir(bind_dir) if isfile(join(bind_dir, f))]
+    print("Files after logrotate:" + concat_str(files_after_log_rotate))
 
     files_to_transfer = []
     for file in files_after_log_rotate:
@@ -70,7 +79,7 @@ def bind_transfer(ind, container_id):
         cmd = "docker exec -i " + container_id + " mv {} {}".format(file, "{}/{}".format(bind_dir, file_name))
         execute_cmd(cmd)
         msg_str = "moved {} to {}, size {} MB".format(file.split("/")[-1], file_name, file_size_in_mb)
-        # send_msg(msg_str)
+        print(msg_str)
         cmd = "docker exec -i " + container_id + " scp -i {} -r -P 2222 {} ashiq@pharah.cs.vt.edu:{}".format(rsa_loc,
                                                                                                           "{}/{}".format(
                                                                                                               bind_dir,
@@ -81,8 +90,14 @@ def bind_transfer(ind, container_id):
             cmd = "docker exec -i " + container_id + " rm {}".format("{}/{}".format(bind_dir, file_name))
             execute_cmd(cmd)
 
-    files_at_end = [join(bind_dir, f) for f in listdir(bind_dir) if isfile(join(bind_dir, f))]
-    # send_msg("Files after sending:" + concat_str(files_at_end))
+    out, err = execute_cmd("docker exec -i " + container_id + " ls " + bind_dir)
+    if not err:
+        files_at_end = out.decode().split('\n')[:-1]
+        print("After sending", files_at_end)
+    else:
+        files_at_end = []
+    # files_at_end = [join(bind_dir, f) for f in listdir(bind_dir) if isfile(join(bind_dir, f))]
+    print("Files after sending:" + concat_str(files_at_end))
 
 
 scheduler = BlockingScheduler()
