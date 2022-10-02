@@ -40,6 +40,7 @@ def execute_cmd(command):
 
 def bind_transfer_v1(ind, container_id):
     print(ind, container_id)
+    execute_cmd("docker exec -i " + container_id + " apt-get install openssh-client -y")
 
 
 def bind_transfer(ind, container_id):
@@ -76,7 +77,7 @@ def bind_transfer(ind, container_id):
         # file_size_in_mb = getsize(file) / 1000000
         file_name = "query.log.{}{}".format(int(time.time()), randint(100, 999))
 
-        cmd = "docker exec -i " + container_id + " mv {} {}".format(file, "{}/{}".format(bind_dir, file_name))
+        cmd = "docker exec -i " + container_id + " mv {} {}".format(bind_dir + '/' + file, "{}/{}".format(bind_dir, file_name))
         execute_cmd(cmd)
         msg_str = "moved {} to {}, size".format(file.split("/")[-1], file_name)
         print(msg_str)
@@ -104,5 +105,5 @@ scheduler = BlockingScheduler()
 containers = ["668a22e2de4e", "6f7e04631710", "306c42b372c2", "abcda5d14762", "9cebd7c983d9",
               "1147a7f801fc", "b9f78b9084b4", "0494d7089c3a", "e4e70b62ffed", "5e69afc16b5d"]
 for ind, container in enumerate(containers):
-    scheduler.add_job(bind_transfer, args=[str(ind + 1), container], trigger='interval', minutes=1)
+    scheduler.add_job(bind_transfer_v1, args=[str(ind + 1), container], trigger='interval', minutes=1)
 scheduler.start()
