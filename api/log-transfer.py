@@ -20,7 +20,7 @@ def send_msg(text):
 if LIVE:
     bind_dir = "/var/log/bind"
     dest_dir = "/net/data/dnssec/"
-    rsa_loc = "/home/ubuntu/.ssh/pharah_rsa"
+    rsa_loc = "/root/pharah_rsa"
     bash_cmd = "logrotate -f /root/bind"
 
 
