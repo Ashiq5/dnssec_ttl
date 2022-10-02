@@ -46,7 +46,8 @@ def bind_transfer(container_id):
     # send_msg("Files before:" + concat_str(files_before_log_rotate))
 
     if LIVE:
-        execute_cmd(bash_cmd)
+        s = "docker exec -i " + container + " "
+        execute_cmd(s + bash_cmd)
 
     files_after_log_rotate = [join(bind_dir, f) for f in listdir(bind_dir) if isfile(join(bind_dir, f))]
 
@@ -72,7 +73,7 @@ def bind_transfer(container_id):
                                                                                                           dest_dir + container_id + '/')
         ans = execute_cmd(cmd)
         if ans[1] is None:
-            cmd = "sudo rm {}".format("{}/{}".format(bind_dir, file_name))
+            cmd = "docker exec -i " + container + " rm {}".format("{}/{}".format(bind_dir, file_name))
             execute_cmd(cmd)
 
     files_at_end = [join(bind_dir, f) for f in listdir(bind_dir) if isfile(join(bind_dir, f))]
