@@ -73,12 +73,12 @@ def bind_transfer(ind, container_id):
             files_to_transfer.append(file)
 
     for file in files_to_transfer:
-        file_size_in_mb = getsize(file) / 1000000
+        # file_size_in_mb = getsize(file) / 1000000
         file_name = "query.log.{}{}".format(int(time.time()), randint(100, 999))
 
         cmd = "docker exec -i " + container_id + " mv {} {}".format(file, "{}/{}".format(bind_dir, file_name))
         execute_cmd(cmd)
-        msg_str = "moved {} to {}, size {} MB".format(file.split("/")[-1], file_name, file_size_in_mb)
+        msg_str = "moved {} to {}, size".format(file.split("/")[-1], file_name)
         print(msg_str)
         cmd = "docker exec -i " + container_id + " scp -i {} -r -P 2222 {} ashiq@pharah.cs.vt.edu:{}".format(rsa_loc,
                                                                                                           "{}/{}".format(
