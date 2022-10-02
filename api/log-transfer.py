@@ -38,7 +38,12 @@ def execute_cmd(command):
     return output, error
 
 
-def bind_transfer(container_id):
+def bind_transfer_v1(ind, container_id):
+    print(ind, container_id)
+
+
+def bind_transfer(ind, container_id):
+    print(ind, container_id)
     # send_msg("Starting bind transfer")
 
     files_before_log_rotate = [join(bind_dir, f) for f in listdir(bind_dir) if isfile(join(bind_dir, f))]
@@ -46,7 +51,7 @@ def bind_transfer(container_id):
     # send_msg("Files before:" + concat_str(files_before_log_rotate))
 
     if LIVE:
-        s = "docker exec -i " + container + " "
+        s = "docker exec -i " + container_id + " "
         execute_cmd(s + bash_cmd)
 
     files_after_log_rotate = [join(bind_dir, f) for f in listdir(bind_dir) if isfile(join(bind_dir, f))]
@@ -62,18 +67,18 @@ def bind_transfer(container_id):
         file_size_in_mb = getsize(file) / 1000000
         file_name = "query.log.{}{}".format(int(time.time()), randint(100, 999))
 
-        cmd = "docker exec -i " + container + " mv {} {}".format(file, "{}/{}".format(bind_dir, file_name))
+        cmd = "docker exec -i " + container_id + " mv {} {}".format(file, "{}/{}".format(bind_dir, file_name))
         execute_cmd(cmd)
         msg_str = "moved {} to {}, size {} MB".format(file.split("/")[-1], file_name, file_size_in_mb)
         # send_msg(msg_str)
-        cmd = "docker exec -i " + container + " scp -i {} -r -P 2222 {} ashiq@pharah.cs.vt.edu:{}".format(rsa_loc,
+        cmd = "docker exec -i " + container_id + " scp -i {} -r -P 2222 {} ashiq@pharah.cs.vt.edu:{}".format(rsa_loc,
                                                                                                           "{}/{}".format(
                                                                                                               bind_dir,
                                                                                                               file_name),
-                                                                                                          dest_dir + container_id + '/')
+                                                                                                          dest_dir + ind + '/')
         ans = execute_cmd(cmd)
         if ans[1] is None:
-            cmd = "docker exec -i " + container + " rm {}".format("{}/{}".format(bind_dir, file_name))
+            cmd = "docker exec -i " + container_id + " rm {}".format("{}/{}".format(bind_dir, file_name))
             execute_cmd(cmd)
 
     files_at_end = [join(bind_dir, f) for f in listdir(bind_dir) if isfile(join(bind_dir, f))]
@@ -84,5 +89,5 @@ scheduler = BlockingScheduler()
 containers = ["668a22e2de4e", "6f7e04631710", "306c42b372c2", "abcda5d14762", "9cebd7c983d9",
               "1147a7f801fc", "b9f78b9084b4", "0494d7089c3a", "e4e70b62ffed", "5e69afc16b5d"]
 for ind, container in enumerate(containers):
-    scheduler.add_job(bind_transfer, args=[str(ind + 1)], trigger='interval', minutes=1)
+    scheduler.add_job(bind_transfer_v1, args=[str(ind + 1), container], trigger='interval', minutes=1)
 scheduler.start()
