@@ -19,7 +19,7 @@ def send_msg(text):
 
 if LIVE:
     bind_dir = "/var/log/bind"
-    dest_dir = "/net/data/dnssec/"
+    dest_dir = "/net/data/dns-ttl/dnssec/"
     rsa_loc = "/root/pharah_rsa"
     bash_cmd = "logrotate -f /root/bind"
 
