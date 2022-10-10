@@ -8,3 +8,7 @@ pytz==2022.2.1
 requests==2.28.1
 sqlparse==0.4.2
 urllib3==1.26.12
+filelock~=3.8.0
+redis~=4.3.4
+APScheduler~=3.9.1
+pyspark~=3.3.0

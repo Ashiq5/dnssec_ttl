@@ -1,2 +1,5 @@
 .idea/
 api/db.cashcash.app
+analysis/dns_logs
+analysis/http_logs
+analysis/result
