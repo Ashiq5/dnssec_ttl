@@ -160,7 +160,7 @@ async def _sign(container_id, validity):
         else:
             val = str(int(validity) * 60)
         # execute the following command in each docker container in a parallel fashion
-        signing_cmd = "dnssec-signzone -N INCREMENT -o " + domain + " -e now+" + validity + \
+        signing_cmd = "dnssec-signzone -N INCREMENT -o " + domain + " -e now+" + val + \
                       " -k /etc/bind/zones/Kcashcash.app.+008+13816.key -t /etc/bind/zones/db.cashcash.app " \
                       "/etc/bind/zones/Kcashcash.app.+008+45873.private"
         cmd = "docker exec -i " + containers[container_id-1] + " " + signing_cmd
