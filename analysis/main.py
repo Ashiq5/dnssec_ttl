@@ -35,9 +35,9 @@ def _parse_dns_logs(files):
 
                         segments = line.strip().split()
                         resolver_ip, ts, mode, webserver_ip, dns_server_inside_ip, qn, qt, tc_bit, \
-                        ednsflag, protocol = segments[2], segments[3], segments[4], segments[5], segments[6], \
-                                             segments[7], segments[8], segments[10], segments[12], segments[13]
-
+                        ednsflag = segments[2], segments[3], segments[4], segments[5], segments[6], \
+                                   segments[7], segments[8], segments[10], segments[12]
+                        protocol = segments[13] if len(segments) == 14 else 'UDP'
                         uid, exp_id = qn.split('.')[0], qn.split('.')[1].split('_')[2]
                         if not exp_id:
                             continue
@@ -144,10 +144,12 @@ def _identify_actual_resolver_ip(phase_resp, dns_queries):
             actual_webserver_ip = index_to_ip[i]
 
     for query in dns_queries:
-        # if resolver_to_asn.get(resolver_ip) in lum_resolvers_asn:
-        # continue
-        # if not query['do']:
-        # continue
+        if resolver_to_asn.get(query['resolver_ip']) in lum_resolvers_asn:
+            continue
+        if not query['do']:
+            continue
+        if query['resolver_ip'] not in validating_resolvers:
+            continue
         resolvers[query['resolver_ip']] = query['webserver_ip']
 
     # print(phase_resp, resolvers)
@@ -162,54 +164,30 @@ def _identify_actual_resolver_ip(phase_resp, dns_queries):
 def _parse_logs(expt_id):
     dns_logs = dns_info[expt_id]
     http_logs = http_info[expt_id]
+    # print(len(dns_logs['requests'].keys()))
+    # print(len(http_logs.keys()))
     try:
-        # print(len(dns_logs['requests'].keys()))
-        # print(http_logs.keys())
-        # print(expt_id)
-        # dns_logs = dns.value[expt_id]
-        # http_logs = http.value[expt_id]
         for uid in dns_logs['requests']:
             dns_logs['requests'][uid].sort(key=lambda item: item['date'])
 
-        x, y, z = set(), set(), set()
         d = defaultdict(list)
 
         dns_info_curated_first_v2 = []
         dns_info_curated_second_v2 = []
 
         for uid in http_logs:
-            # if uid == '004ce9ff-b19a-48e5-8ded-485d05ad48271664901546271':
-            #     print(len(dns_logs['requests'][uid]))
             dns_info_curated_first = _segment(dns_logs['requests'][uid], http_logs[uid]["batch_phase1_start"],
                                               http_logs[uid]["batch_phase1_end"])
-            # if uid == '004ce9ff-b19a-48e5-8ded-485d05ad48271664901546271':
-            #     print(len(dns_info_curated_first), dns_info_curated_first[0]['date'].timestamp(),
-            #           http_logs[uid]["batch_phase1_start"], http_logs[uid]["batch_phase1_end"])
             dns_info_curated_second = _segment(dns_logs['requests'][uid], http_logs[uid]["batch_phase2_start"],
                                                http_logs[uid]["batch_phase2_end"])
-            # if uid == '004ce9ff-b19a-48e5-8ded-485d05ad48271664901546271':
-            #     print(len(dns_info_curated_second), dns_info_curated_second[0]['date'].timestamp(),
-            #           http_logs[uid]["batch_phase2_start"], http_logs[uid]["batch_phase2_end"])
-
-            # print(uid, http_logs[uid], dns_info_curated_first)
             time1, time2 = http_logs[uid]['phase1_time'], http_logs[uid]['phase2_time']
             if time1:
                 time1_range = (time1/1000 - 4, time1/1000 + 4)
-                # if uid == '004ce9ff-b19a-48e5-8ded-485d05ad48271664901546271':
-                #     print('time1', time1_range, time1, uid, dns_info_curated_first)
-                #     for query in dns_info_curated_first:
-                #         print(query['date'].timestamp(), end=',')
                 for query in dns_info_curated_first:
-                    # if uid == '004ce9ff-b19a-48e5-8ded-485d05ad48271664901546271':
-                    #     print(time1_range[0]/1000, query['date'].timestamp(), time1_range[1]/1000)
                     if time1_range[0] <= query['date'].timestamp() <= time1_range[1]:
                         dns_info_curated_first_v2.append(query)
-                # if uid == '004ce9ff-b19a-48e5-8ded-485d05ad48271664901546271':
-                #     print()
-                #     print(len(dns_info_curated_first_v2), time1_range)
             if time2:
                 time2_range = (time2/1000 - 4, time2/1000 + 4)
-                # print('time2', time2_range, uid, dns_info_curated_second)
                 for query in dns_info_curated_second:
                     if time2_range[0] <= query['date'].timestamp() <= time2_range[1]:
                         dns_info_curated_second_v2.append(query)
@@ -219,15 +197,11 @@ def _parse_logs(expt_id):
             # actual resolver identification
             actual_resolver_ip_phase1 = _identify_actual_resolver_ip(phase1_resp, dns_info_curated_first_v2)
             actual_resolver_ip_phase2 = _identify_actual_resolver_ip(phase2_resp, dns_info_curated_second_v2)
-            # print(actual_resolver_ip_phase1, actual_resolver_ip_phase2)
 
             if phase1_resp:
-                # if uid == '004ce9ff-b19a-48e5-8ded-485d05ad48271664901546271':
-                #     print(phase1_resp, phase2_resp, actual_resolver_ip_phase1, actual_resolver_ip_phase2)
                 # case 1: serving from cache, resolver from case 1 won't appear and both phase will have same responses
                 if phase2_resp is not None and phase1_resp == phase2_resp and not actual_resolver_ip_phase2 and \
                         actual_resolver_ip_phase1 != actual_resolver_ip_phase2:
-                    x.add(actual_resolver_ip_phase1)
                     d[actual_resolver_ip_phase1].append({
                         "case": 1,
                         "exit_node_asn": http_logs[uid]["exit_node_asn"],
@@ -238,8 +212,6 @@ def _parse_logs(expt_id):
                 # server in phase 2
                 elif phase2_resp is not None and phase1_resp != phase2_resp and 'phasex' in phase2_resp and \
                         actual_resolver_ip_phase1 == actual_resolver_ip_phase2 and actual_resolver_ip_phase1:
-                    # print("case2", uid, phase1_resp, phase2_resp, actual_resolver_ip_phase1, actual_resolver_ip_phase2)
-                    y.add(actual_resolver_ip_phase1)
                     d[actual_resolver_ip_phase1].append({
                         "case": 2,
                         "exit_node_asn": http_logs[uid]["exit_node_asn"],
@@ -249,14 +221,12 @@ def _parse_logs(expt_id):
                 # case 3: servfail in phase 2, resolver from case 1 won't appear and phase 2 will have no response
                 elif phase1_resp != phase2_resp and not phase2_resp and not actual_resolver_ip_phase2 and \
                         actual_resolver_ip_phase1 != actual_resolver_ip_phase2:
-                    z.add(actual_resolver_ip_phase1)
                     d[actual_resolver_ip_phase1].append({
                         "case": 3,
                         "exit_node_asn": http_logs[uid]["exit_node_asn"],
                         "exit_node_ip_hash": http_logs[uid]["ip_hash"],
                         "uid": uid,
                     })
-
         return d
     except Exception as e:
         print(expt_id, dns_logs)
@@ -332,8 +302,9 @@ if __name__ == "__main__":
         dns_logs_dir = '/Users/ashiq/PycharmProjects/dnssec_ttl/analysis/dns_logs/'
         http_logs_dir = '/Users/ashiq/PycharmProjects/dnssec_ttl/analysis/http_logs/'
 
-    # resolver_to_asn = json.load(open('Outer_updates/temp/resolver-to-asn.json'))
+    resolver_to_asn = json.load(open('Outer_updates/temp/resolver-to-asn.json'))
     lum_resolvers_asn = [15169, 20473, 36692, 14061, 30607, 24940, 27725]
+    validating_resolvers = json.load(open('/home/protick/ocsp_dns_tools/validating_resolvers.json'))
 
     dns_files = [dns_logs_dir + f for f in os.listdir(dns_logs_dir)
                  if os.path.isfile(os.path.join(dns_logs_dir, f))]
@@ -352,14 +323,14 @@ if __name__ == "__main__":
     # print(exp_id_list)
 
     # master()
-    conf = SparkConf() \
-        .setAppName("spf-exploit-spark") \
-        # .setMaster("local[*]")
-
-    sc = SparkContext(conf=conf)
-
-    sqlContext = SQLContext(sc)
-    sc.setLogLevel("ERROR")
+    # conf = SparkConf() \
+    #     .setAppName("spf-exploit-spark") \
+    #     # .setMaster("local[*]")
+    #
+    # sc = SparkContext(conf=conf)
+    #
+    # sqlContext = SQLContext(sc)
+    # sc.setLogLevel("ERROR")
 
     # result = sc.accumulator(defaultdict(list), DictParam())
     # master_with_spark()
