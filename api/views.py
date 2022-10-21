@@ -197,7 +197,7 @@ class Init(APIView):
                     asyncio.set_event_loop(loop)
                 else:
                     raise
-            tasks = [_init_zone_file(each) for each in [1] + [i for i in range(3, n)]]  # TODO: change it to 9
+            tasks = [_init_zone_file(each) for each in [1] + [i for i in range(3, n)]]
             result = loop.run_until_complete(asyncio.gather(*tasks))
             # loop.close()
 
@@ -231,7 +231,7 @@ class Edit(APIView):
                     asyncio.set_event_loop(loop)
                 else:
                     raise
-            tasks = [_edit_zone_file(each, ttl, exp_id) for each in [1] + [i for i in range(3, n)]]  # TODO: change it to 9
+            tasks = [_edit_zone_file(each, ttl, exp_id) for each in [1] + [i for i in range(3, n)]]
             result = loop.run_until_complete(asyncio.gather(*tasks))
             # loop.close()
 
@@ -263,7 +263,7 @@ class Sign(APIView):
                 else:
                     raise
 
-            tasks = [_sign(each, validity) for each in [1] + [i for i in range(3, n)]]  # TODO: change it to 9
+            tasks = [_sign(each, validity) for each in [1] + [i for i in range(3, n)]]
             result = loop.run_until_complete(asyncio.gather(*tasks))
             # loop.close()
 
@@ -298,11 +298,11 @@ class Edit_Sign(APIView):
                     asyncio.set_event_loop(loop)
                 else:
                     raise
-            tasks = [_edit_zone_file(each, ttl, exp_id) for each in [1] + [i for i in range(3, n)]]  # TODO: change it to 9
+            tasks = [_edit_zone_file(each, ttl, exp_id) for each in [1] + [i for i in range(3, n)]]
             result = loop.run_until_complete(asyncio.gather(*tasks))
 
             if all(result):
-                tasks = [_sign(each, validity) for each in [1] + [i for i in range(3, n)]]  # TODO: change it to 9
+                tasks = [_sign(each, validity) for each in [1] + [i for i in range(3, n)]]
                 result = loop.run_until_complete(asyncio.gather(*tasks))
                 # loop.close()
                 if all(result):

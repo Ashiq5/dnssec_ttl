@@ -346,8 +346,8 @@ if __name__ == "__main__":
 
     live = False
     if live:
-        dns_logs_dir = '/net/data/dns-ttl/dnssec_ttl_new/bind/'
-        http_logs_dir = '/home/protick/node_code/results_new_exp_dnssec_v2/'
+        dns_logs_dir = "/net/data/dns-ttl/dnssec_ttl_new/bind/"
+        http_logs_dir = "/home/protick/node_code/results_new_exp_dnssec_v4"
     else:
         dns_logs_dir = '/Users/ashiq/PycharmProjects/dnssec_ttl/analysis/dns_logs/'
         http_logs_dir = '/Users/ashiq/PycharmProjects/dnssec_ttl/analysis/http_logs/'
