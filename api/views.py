@@ -165,7 +165,7 @@ async def _sign(container_id, validity):
                       " -k /etc/bind/zones/Kcashcash.app.+008+13816.key -t /etc/bind/zones/db.cashcash.app " \
                       "/etc/bind/zones/Kcashcash.app.+008+45873.private"
         cmd = "docker exec -i " + containers[container_id-1] + " " + signing_cmd
-        p = _execute_bash(cmd)
+        p = await _execute_bash(cmd)
         stdout = p.stdout.decode().split('\n') + p.stderr.decode().split('\n')
         signed = False
         for j in stdout:
