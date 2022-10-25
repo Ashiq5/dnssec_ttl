@@ -24,6 +24,8 @@ SECRET_KEY = 'django-insecure-_vz0ismp==h!3o0j2m5*$p1vycz20@cy@ha#g+v896qwv%a^=7
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+DJANGO_LOG_PATH = 'logs/django.log'
+CUSTOM_LOG_PATH = 'logs/custom.log'
 
 ALLOWED_HOSTS = ["18.212.182.179", "127.0.0.1"]
 
@@ -50,6 +52,46 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': DJANGO_LOG_PATH,
+            'formatter': 'verbose'
+        },
+        'custom': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': CUSTOM_LOG_PATH,
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'spf_referral_vulnerability_checker': {
+            'handlers': ['custom'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+    }
+}
 
 ROOT_URLCONF = 'dnssec_ttl.urls'
 
