@@ -62,7 +62,8 @@ async def _execute_bash(cmd):
 
 
 async def _reload_bind(container_id):
-    print('start', datetime.datetime.fromtimestamp(time.time()).strftime('%d-%m-%Y %H:%M:%S.%f'))
+    s = time.time()
+    print('start', s)
     cmd = "docker exec -i " + containers[container_id - 1] + " service named reload"
     stdout, stderr = await _execute_bash(cmd)
     stdout = stdout.decode().split('\n') + stderr.decode().split('\n')
@@ -74,7 +75,8 @@ async def _reload_bind(container_id):
             reloaded = True
     if not reloaded:
         raise Exception("Reloaded: " + "\n".join(stdout))
-    print('end', datetime.datetime.fromtimestamp(time.time()).strftime('%d-%m-%Y %H:%M:%S.%f'))
+    e = time.time()
+    print('end', e, e - s)
     return True
 
 
