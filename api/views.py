@@ -232,7 +232,7 @@ class Edit(APIView):
         try:
             kwargs = request.GET.dict()
             ttl = kwargs['ttl']
-            exp_id = kwargs['exp_id']
+            exp_id = kwargs['expt_id']
 
             # add the wildcard entry to the zone file, edit the ttl. do it for every container in an async way
             try:
