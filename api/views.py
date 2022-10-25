@@ -67,6 +67,7 @@ async def _reload_bind(container_id):
     cmd = "docker exec -i " + containers[container_id - 1] + " service named reload"
     stdout, stderr = await _execute_bash(cmd)
     stdout = stdout.decode().split('\n') + stderr.decode().split('\n')
+    print(stdout)
     started, reloaded = False, False
     for j in stdout:
         if 'Reloading domain name service... named' in j:
