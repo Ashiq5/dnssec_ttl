@@ -50,14 +50,14 @@ container2local_ip_dict = {
 zone_ip = ALLOWED_HOSTS[0]
 
 
-def _execute_bash(cmd):
+async def _execute_bash(cmd):
     print('Command:', cmd)
     return subprocess.run(cmd, shell=True, capture_output=True)
 
 
 def _reload_bind(container_id):
     cmd = "docker exec -i " + containers[container_id - 1] + " service named reload"
-    p = _execute_bash(cmd)
+    p = await _execute_bash(cmd)
     stdout = p.stdout.decode().split('\n') + p.stderr.decode().split('\n')
     started, reloaded = False, False
     for j in stdout:
@@ -93,7 +93,7 @@ def _call_sign_api(validity):
 
 
 @asyncio.coroutine
-def _init_zone_file(container_id):
+async def _init_zone_file(container_id):
     # 1. add "*.<exp_id>.<domain>. IN A container2ip_dict[container_id]
     # 2. modify TTL value (I guess it can be done manually)
     try:
@@ -102,11 +102,11 @@ def _init_zone_file(container_id):
         zone_file_name = "db." + domain
         path = os.path.join(path, zone_file_name)
         cmd = "cp " + base_path + zone_file_name + " " + path
-        _execute_bash(cmd)
+        await _execute_bash(cmd)
         cmd = "docker exec -i " + containers[container_id-1] + " sh -c 'cat > /etc/bind/zones/" + zone_file_name \
               + "' < " + path
         print(path, cmd)
-        _execute_bash(cmd)
+        await _execute_bash(cmd)
         return True
     except Exception as e:
         traceback.print_exc()
@@ -129,7 +129,7 @@ def _replace_in_file(file_path, search_text, new_line):
 
 
 @asyncio.coroutine
-def _edit_zone_file(container_id, ttl, exp_id):
+async def _edit_zone_file(container_id, ttl, exp_id):
     # 1. add "*.<exp_id>.<domain>. IN A container2ip_dict[container_id]
     # 2. modify TTL value (I guess it can be done manually)
     try:
@@ -145,7 +145,7 @@ def _edit_zone_file(container_id, ttl, exp_id):
         cmd = "docker exec -i " + containers[container_id-1] + " sh -c 'cat > /etc/bind/zones/" + zone_file_name \
               + "' < " + path
         print(path, cmd)
-        _execute_bash(cmd)
+        await _execute_bash(cmd)
         return True
     except Exception as e:
         traceback.print_exc()
