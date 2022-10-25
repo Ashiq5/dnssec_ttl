@@ -52,9 +52,13 @@ zone_ip = ALLOWED_HOSTS[0]
 
 async def _execute_bash(cmd):
     print('Command:', cmd)
-    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    print(p.stdout, p.stderr)
-    return p.stdout, p.stderr
+    proc = await asyncio.create_subprocess_shell(
+        cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await proc.communicate()
+    print(stdout, stderr)
+    return stdout, stderr
 
 
 async def _reload_bind(container_id):
