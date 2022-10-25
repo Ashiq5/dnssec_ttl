@@ -56,7 +56,7 @@ async def _execute_bash(cmd):
 
 
 async def _reload_bind(container_id):
-    print('start', datetime.datetime.fromtimestamp(time.time()).strftime('%d-%m-%Y %H:%M:%S'))
+    print('start', datetime.datetime.fromtimestamp(time.time()).strftime('%d-%m-%Y %H:%M:%S.%f'))
     cmd = "docker exec -i " + containers[container_id - 1] + " service named reload"
     p = await _execute_bash(cmd)
     stdout = p.stdout.decode().split('\n') + p.stderr.decode().split('\n')
@@ -68,7 +68,7 @@ async def _reload_bind(container_id):
             reloaded = True
     if not reloaded:
         raise Exception("Reloaded: " + "\n".join(stdout))
-    print('end', datetime.datetime.fromtimestamp(time.time()).strftime('%d-%m-%Y %H:%M:%S'))
+    print('end', datetime.datetime.fromtimestamp(time.time()).strftime('%d-%m-%Y %H:%M:%S.%f'))
     return True
 
 
@@ -310,10 +310,6 @@ class Edit_Sign(APIView):
                 # loop.close()
                 if all(result):
                     tasks = [_reload_bind(each) for each in [1] + [i for i in range(3, n)]]
-                    # result_reload = []
-                    # for each in [1] + [i for i in range(3, n)]:
-                    #     result_reload.append(asyncio.ensure_future(_reload_bind(each)))
-                    # loop.run_forever()
                     result_reload = loop.run_until_complete(asyncio.gather(*tasks))
                     if all(result_reload):
                         return Response({'success': True}, status=status.HTTP_200_OK)
