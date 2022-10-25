@@ -1,5 +1,5 @@
 import time
-
+import datetime
 from django.shortcuts import render
 import os
 from filelock import FileLock
@@ -155,10 +155,11 @@ def _edit_zone_file(container_id, ttl, exp_id):
 @asyncio.coroutine
 async def _sign(container_id, validity):
     try:
-        if containers[container_id-1] == "6f7e04631710":
-            val = "2592000"
-        else:
-            val = str(int(validity) * 60)
+        print('start time', datetime.datetime.fromtimestamp(time.time()).strftime('%d-%m-%Y %H:%M:%S'))
+        # if containers[container_id-1] == "6f7e04631710":
+        #     return True
+        # else:
+        val = str(int(validity) * 60)
         # execute the following command in each docker container in a parallel fashion
         signing_cmd = "dnssec-signzone -N INCREMENT -o " + domain + " -e now+" + val + \
                       " -k /etc/bind/zones/Kcashcash.app.+008+13816.key -t /etc/bind/zones/db.cashcash.app " \
@@ -173,7 +174,7 @@ async def _sign(container_id, validity):
         print(stdout)
         if not signed:
             raise Exception("Signing resulted in failure: " + "\n".join(stdout))
-
+        print('end time', datetime.datetime.fromtimestamp(time.time()).strftime('%d-%m-%Y %H:%M:%S'))
         return True
     except Exception as e:
         traceback.print_exc()
