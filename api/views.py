@@ -64,8 +64,8 @@ async def _execute_bash(cmd):
 async def _reload_bind(container_id):
     print('start', datetime.datetime.fromtimestamp(time.time()).strftime('%d-%m-%Y %H:%M:%S.%f'))
     cmd = "docker exec -i " + containers[container_id - 1] + " service named reload"
-    p = await _execute_bash(cmd)
-    stdout = p.stdout.decode().split('\n') + p.stderr.decode().split('\n')
+    stdout, stderr = await _execute_bash(cmd)
+    stdout = stdout.decode().split('\n') + stderr.decode().split('\n')
     started, reloaded = False, False
     for j in stdout:
         if 'Reloading domain name service... named' in j:
@@ -173,8 +173,8 @@ async def _sign(container_id, validity):
                       " -k /etc/bind/zones/Kcashcash.app.+008+13816.key -t /etc/bind/zones/db.cashcash.app " \
                       "/etc/bind/zones/Kcashcash.app.+008+45873.private"
         cmd = "docker exec -i " + containers[container_id-1] + " " + signing_cmd
-        p = await _execute_bash(cmd)
-        stdout = p.stdout.decode().split('\n') + p.stderr.decode().split('\n')
+        stdout, stderr = await _execute_bash(cmd)
+        stdout = stdout.decode().split('\n') + stderr.decode().split('\n')
         signed = False
         for j in stdout:
             if 'Zone fully signed:' in j:
