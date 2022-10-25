@@ -55,7 +55,7 @@ async def _execute_bash(cmd):
     return subprocess.run(cmd, shell=True, capture_output=True)
 
 
-def _reload_bind(container_id):
+async def _reload_bind(container_id):
     cmd = "docker exec -i " + containers[container_id - 1] + " service named reload"
     p = await _execute_bash(cmd)
     stdout = p.stdout.decode().split('\n') + p.stderr.decode().split('\n')
@@ -236,8 +236,8 @@ class Edit(APIView):
             result = loop.run_until_complete(asyncio.gather(*tasks))
             # loop.close()
 
-            for each in [1] + [i for i in range(3, n)]:
-                _reload_bind(each)
+            tasks = [_reload_bind(each) for each in [1] + [i for i in range(3, n)]]
+            result_reload = loop.run_until_complete(asyncio.gather(*tasks))
 
             if all(result):
                 return Response({'success': True}, status=status.HTTP_200_OK)
@@ -268,8 +268,8 @@ class Sign(APIView):
             result = loop.run_until_complete(asyncio.gather(*tasks))
             # loop.close()
 
-            for each in [1] + [i for i in range(3, n)]:
-                _reload_bind(each)
+            tasks = [_reload_bind(each) for each in [1] + [i for i in range(3, n)]]
+            result_reload = loop.run_until_complete(asyncio.gather(*tasks))
 
             if all(result):
                 return Response({'success': True}, status=status.HTTP_200_OK)
@@ -307,9 +307,14 @@ class Edit_Sign(APIView):
                 result = loop.run_until_complete(asyncio.gather(*tasks))
                 # loop.close()
                 if all(result):
-                    for each in [1] + [i for i in range(3, n)]:
-                        _reload_bind(each)
-                    return Response({'success': True}, status=status.HTTP_200_OK)
+                    tasks = [_reload_bind(each) for each in [1] + [i for i in range(3, n)]]
+                    result_reload = loop.run_until_complete(asyncio.gather(*tasks))
+                    if all(result_reload):
+                        return Response({'success': True}, status=status.HTTP_200_OK)
+                    else:
+                        _call_init_api()
+                        return Response({'success': False, 'error': str("Failure in signing")},
+                                        status=status.HTTP_400_BAD_REQUEST)
                 else:
                     _call_init_api()
                     return Response({'success': False, 'error': str("Failure in signing")}, status=status.HTTP_400_BAD_REQUEST)
