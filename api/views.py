@@ -310,7 +310,7 @@ class Edit_Sign(APIView):
                 # loop.close()
                 if all(result):
                     tasks = [_reload_bind(each) for each in [1] + [i for i in range(3, n)]]
-                    result_reload = loop.run_until_complete(asyncio.gather(*tasks))
+                    result_reload = await asyncio.gather(*tasks)
                     if all(result_reload):
                         return Response({'success': True}, status=status.HTTP_200_OK)
                     else:
