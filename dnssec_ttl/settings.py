@@ -85,7 +85,7 @@ LOGGING = {
             'propagate': True,
             'level': 'DEBUG',
         },
-        'spf_referral_vulnerability_checker': {
+        'dnssec_ttl': {
             'handlers': ['custom'],
             'propagate': True,
             'level': 'DEBUG',
