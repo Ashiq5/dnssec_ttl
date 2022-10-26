@@ -235,7 +235,7 @@ class Edit_Sign(APIView):
             ttl = kwargs['ttl']
             exp_id = kwargs['expt_id']
             validity = kwargs['validity']
-            logger.debug("Exp ID", exp_id)
+            logger.debug("Exp ID " + exp_id)
 
             # add the wildcard entry to the zone file, edit the ttl. do it for every container in an async way
             try:
