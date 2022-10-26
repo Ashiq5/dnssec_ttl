@@ -78,7 +78,7 @@ async def _reload_bind(container_id):
     if not reloaded:
         raise Exception("Reloaded: " + "\n".join(stdout))
     e = time.time()
-    logger.debug('end ' + str(e), str(e - s))
+    logger.debug('end ' + str(e) + " " + str(e - s))
     return True
 
 
